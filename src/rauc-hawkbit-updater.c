@@ -1,4 +1,22 @@
 /**
+ * SPDX-License-Identifier: LGPL-2.1-only
+ *
+ * Copyright (C) 2018-2020 Prevas A/S (www.prevas.com)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  * @file rauc-hawkbit-updater.c
  * @author Lasse Mikkelsen <lkmi@prevas.dk>
  * @date 19 Sep 2018
@@ -72,7 +90,7 @@ static gboolean on_rauc_install_complete_cb(gpointer data)
         struct install_context *context = data;
 
         struct on_install_complete_userdata userdata = {
-              .install_success = (context->status_result == 0)
+                .install_success = (context->status_result == 0)
         };
         // lets notify hawkbit with install result
         notify_hawkbit_install_complete(&userdata);
@@ -104,9 +122,9 @@ int main(int argc, char **argv)
         // Lets support unicode filenames
         args = g_strdupv(argv);
 
-        context = g_option_context_new ("");
-        g_option_context_add_main_entries (context, entries, NULL);
-        if (!g_option_context_parse_strv (context, &args, &error)) {
+        context = g_option_context_new("");
+        g_option_context_add_main_entries(context, entries, NULL);
+        if (!g_option_context_parse_strv(context, &args, &error)) {
                 g_printerr("option parsing failed: %s\n", error->message);
                 g_error_free(error);
                 exit_code = 1;
@@ -115,6 +133,12 @@ int main(int argc, char **argv)
 
         if (opt_version) {
                 g_printf("Version %.1f\n", VERSION);
+                goto out;
+        }
+
+        if (config_file == NULL) {
+                g_printerr("No configuration file given\n");
+                exit_code = 2;
                 goto out;
         }
 
@@ -145,11 +169,11 @@ int main(int argc, char **argv)
 
         setup_logging(PROGRAM, log_level, opt_output_systemd);
         hawkbit_init(config, on_new_software_ready_cb);
-        hawkbit_start_service_sync();
+        exit_code = hawkbit_start_service_sync();
 
         config_file_free(config);
 out:
         g_option_context_free(context);
-        g_strfreev (args);
+        g_strfreev(args);
         return exit_code;
 }

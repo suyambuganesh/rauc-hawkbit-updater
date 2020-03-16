@@ -1,4 +1,22 @@
 /**
+ * SPDX-License-Identifier: LGPL-2.1-only
+ *
+ * Copyright (C) 2018-2020 Prevas A/S (www.prevas.com)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  * @file   log.c
  * @author Lasse Mikkelsen <lkmi@prevas.dk>
  * @date   19 Sep 2018
@@ -14,7 +32,7 @@ static gboolean output_to_systemd = FALSE;
  *
  * @param[in] level Log level that should be returned as string.
  */
-const gchar *log_level_to_string (GLogLevelFlags level)
+static const gchar *log_level_to_string(GLogLevelFlags level)
 {
         switch (level) {
         case G_LOG_LEVEL_ERROR:
@@ -40,7 +58,8 @@ const gchar *log_level_to_string (GLogLevelFlags level)
  * @param[in] level Log level that should be returned as string.
  * @return    syslog level
  */
-int log_level_to_int (GLogLevelFlags level)
+#ifdef WITH_SYSTEMD
+static int log_level_to_int(GLogLevelFlags level)
 {
         switch (level) {
         case G_LOG_LEVEL_ERROR:
@@ -59,6 +78,7 @@ int log_level_to_int (GLogLevelFlags level)
                 return LOG_INFO;
         }
 }
+#endif
 
 /**
  * @brief     Glib log handler callback
@@ -68,19 +88,19 @@ int log_level_to_int (GLogLevelFlags level)
  * @param[in] message    Log message
  * @param[in] user_data  Not used
  */
-void log_handler_cb(const gchar    *log_domain,
-                    GLogLevelFlags log_level,
-                    const gchar    *message,
-                    gpointer user_data)
+static void log_handler_cb(const gchar    *log_domain,
+                           GLogLevelFlags log_level,
+                           const gchar    *message,
+                           gpointer user_data)
 {
 #ifdef WITH_SYSTEMD
         if (output_to_systemd) {
-                int log_level_int = log_level_to_int (log_level & G_LOG_LEVEL_MASK);
+                int log_level_int = log_level_to_int(log_level & G_LOG_LEVEL_MASK);
                 sd_journal_print(log_level_int, "%s", message);
         } else {
 #endif
         const gchar *log_level_str;
-        log_level_str = log_level_to_string (log_level & G_LOG_LEVEL_MASK);
+        log_level_str = log_level_to_string(log_level & G_LOG_LEVEL_MASK);
         if (log_level <= G_LOG_LEVEL_WARNING) {
                 g_printerr("%s: %s\n", log_level_str, message);
         } else {
@@ -101,7 +121,7 @@ void log_handler_cb(const gchar    *log_domain,
 void setup_logging(const gchar *domain, GLogLevelFlags level, gboolean p_output_to_systemd)
 {
         output_to_systemd = p_output_to_systemd;
-        g_log_set_handler (NULL,
-                           level | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
-                           log_handler_cb, NULL);
+        g_log_set_handler(NULL,
+                          level | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+                          log_handler_cb, NULL);
 }

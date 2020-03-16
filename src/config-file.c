@@ -1,4 +1,22 @@
 /**
+ * SPDX-License-Identifier: LGPL-2.1-only
+ *
+ * Copyright (C) 2018-2020 Prevas A/S (www.prevas.com)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  * @file config-file.c
  * @author Lasse Mikkelsen <lkmi@prevas.dk>
  * @date 19 Sep 2018
@@ -25,7 +43,7 @@ void config_file_free(struct config *config)
         g_hash_table_destroy(config->device);
 }
 
-gboolean get_key_string(GKeyFile *key_file, const gchar* group, const gchar* key, gchar** value, const gchar* default_value, GError **error)
+static gboolean get_key_string(GKeyFile *key_file, const gchar* group, const gchar* key, gchar** value, const gchar* default_value, GError **error)
 {
         gchar *val = NULL;
         val = g_key_file_get_string(key_file, group, key, error);
@@ -40,7 +58,7 @@ gboolean get_key_string(GKeyFile *key_file, const gchar* group, const gchar* key
         return TRUE;
 }
 
-gboolean get_key_bool(GKeyFile *key_file, const gchar* group, const gchar* key, gboolean* value, const gboolean default_value, GError **error)
+static gboolean get_key_bool(GKeyFile *key_file, const gchar* group, const gchar* key, gboolean* value, const gboolean default_value, GError **error)
 {
         g_autofree gchar *val = NULL;
         val = g_key_file_get_string(key_file, group, key, NULL);
@@ -61,7 +79,7 @@ gboolean get_key_bool(GKeyFile *key_file, const gchar* group, const gchar* key, 
         return FALSE;
 }
 
-gboolean get_key_int(GKeyFile *key_file, const gchar* group, const gchar* key, gint* value, const gint default_value, GError **error)
+static gboolean get_key_int(GKeyFile *key_file, const gchar* group, const gchar* key, gint* value, const gint default_value, GError **error)
 {
         gint val = g_key_file_get_integer(key_file, group, key, NULL);
         if (val == 0) {
@@ -72,7 +90,7 @@ gboolean get_key_int(GKeyFile *key_file, const gchar* group, const gchar* key, g
         return TRUE;
 }
 
-gboolean get_group(GKeyFile *key_file, const gchar *group, GHashTable **hash, GError *error)
+static gboolean get_group(GKeyFile *key_file, const gchar *group, GHashTable **hash, GError *error)
 {
         guint key;
         gsize num_keys;
@@ -80,7 +98,7 @@ gboolean get_group(GKeyFile *key_file, const gchar *group, GHashTable **hash, GE
 
         *hash = g_hash_table_new(g_str_hash, g_str_equal);
         keys = g_key_file_get_keys(key_file, group, &num_keys, &error);
-        for(key = 0; key < num_keys; key++)
+        for (key = 0; key < num_keys; key++)
         {
                 value = g_key_file_get_value(key_file,
                                              group,
@@ -92,7 +110,7 @@ gboolean get_group(GKeyFile *key_file, const gchar *group, GHashTable **hash, GE
         return (num_keys > 0);
 }
 
-GLogLevelFlags log_level_from_string(const gchar *log_level)
+static GLogLevelFlags log_level_from_string(const gchar *log_level)
 {
         if (g_strcmp0(log_level, "error") == 0) {
                 return G_LOG_LEVEL_ERROR;

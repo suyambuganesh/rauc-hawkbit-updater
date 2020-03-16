@@ -1,4 +1,22 @@
 /**
+ * SPDX-License-Identifier: LGPL-2.1-only
+ *
+ * Copyright (C) 2018-2020 Prevas A/S (www.prevas.com)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  * @file rauc-installer.c
  * @author Lasse Mikkelsen <lkmi@prevas.dk>
  * @date 19 Sep 2018
@@ -42,7 +60,7 @@ static void on_installer_status(GDBusProxy *proxy, GVariant *changed,
                 g_mutex_unlock(&context->status_mutex);
 
                 if (!g_queue_is_empty(&context->status_messages)) {
-                        g_main_context_invoke (context->loop_context, context->notify_event, context);
+                        g_main_context_invoke(context->loop_context, context->notify_event, context);
                 }
         }
 }
@@ -72,7 +90,7 @@ static void on_installer_completed(GDBusProxy *proxy, gint result,
  * @return Pointer to initialized install_context struct. Should be freed by calling
  *         install_context_free().
  */
-struct install_context *install_context_new(void)
+static struct install_context *install_context_new(void)
 {
         struct install_context *context = g_new0(struct install_context, 1);
 
@@ -89,7 +107,7 @@ struct install_context *install_context_new(void)
  * @param[in] context the install_context struct that should be freed.
  *                    If NULL
  */
-void install_context_free(struct install_context *context)
+static void install_context_free(struct install_context *context)
 {
         if (context == NULL)
                 return;
@@ -109,14 +127,14 @@ void install_context_free(struct install_context *context)
  * @param[in] data pointer to a install_context struct.
  * @return NULL is always returned.
  */
-gpointer install_loop_thread(gpointer data)
+static gpointer install_loop_thread(gpointer data)
 {
         GBusType bus_type = (!g_strcmp0(g_getenv("DBUS_STARTER_BUS_TYPE"), "session"))
                             ? G_BUS_TYPE_SESSION : G_BUS_TYPE_SYSTEM;
         RInstaller *r_installer_proxy = NULL;
         GError *error = NULL;
         struct install_context *context = data;
-        g_main_context_push_thread_default (context->loop_context);
+        g_main_context_push_thread_default(context->loop_context);
 
         g_debug("Creating RAUC DBUS proxy");
         r_installer_proxy = r_installer_proxy_new_for_bus_sync(bus_type,
